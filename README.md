@@ -14,4 +14,4 @@ MongoDB file structure:
         
 
 Image preview of the program. Includes two ways to export your list, excel and PDF
-![image](https://user-images.githubusercontent.com/43896766/125219590-dd7fea00-e279-11eb-852f-1da5fb08a698.png)
+![image](https://user-images.githubusercontent.com/43896766/125219773-4b2c1600-e27a-11eb-8358-8b01d510409e.png)
