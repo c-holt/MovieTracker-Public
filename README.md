@@ -1,6 +1,7 @@
 # MovieTracker
 A electron desktop app to keep track of my movies using mongodb.
 
+Custom names and connection strings have to be added and then compiled into a app if you want to use this program. All of which are in the index.html.
 
 MongoDB file structure:
 
