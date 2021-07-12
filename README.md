@@ -1,7 +1,6 @@
 # MovieTracker
-A electron desktop app to keep track of my movies using mongodb
+A electron desktop app to keep track of my movies using mongodb.
 
-Line 42, 103, 307 require a MongoDB connection string to work. Provided by mongoDB
 
 MongoDB file structure:
 
