@@ -5,7 +5,11 @@
   "description": "A App to track Movies Owned",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dev": "nodemon --exec electron . -e .js,html,css",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=release-builds",
+    "package-win": "electron-packager . --overwrite --platform=win32 --arch=x64 --prune=false --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"MovieTracker\"",
+    "package-linux": "electron-packager . --overwrite --platform=linux --arch=x64 --icon=assets/icons/png/1024x1024.png --prune=false --out=release-builds"
   },
   "author": "Cody Holt",
   "license": "MIT",
@@ -14,9 +18,14 @@
   },
   "dependencies": {
     "bootstrap": "^5.0.2",
+    "datatables.net-buttons-dt": "^1.7.1",
     "datatables.net-dt": "^1.1.0",
     "datatables.net-scroller-dt": "^2.0.4",
+    "electron-packager": "^15.2.0",
     "jquery": "^3.6.0",
-    "mongoose": "^5.13.2"
+    "jquery-confirm": "^3.3.4",
+    "jszip": "^3.6.0",
+    "mongoose": "^5.13.2",
+    "pdfmake": "^0.2.0"
   }
 }
