@@ -28,238 +28,240 @@
     </style>
 
     <script>
-      //required for mongodb access
-      const { MongoClient } = require("mongodb");
+            //required for mongodb access
+            const { MongoClient } = require("mongodb");
 
-      //required jquery and datatabels
-      var $ = (jQuery = require("jquery"));
-      require("datatables.net")();
-      require("jquery-confirm")();
+            //required jquery and datatabels
+            var $ = (jQuery = require("jquery"));
+            require("datatables.net")();
+            require("jquery-confirm")();
 
-      //connects mongoDB then makes relevant calls ListMovies
-      async function listMoviesMainDBCall() {
-        const client = new MongoClient(
-          "<ADD MONGO DB CONNECTION STRING HERE>",
-          {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-          }
-        );
+            //change this to your collection name in mongodb
+            const collectionType = "<ADD YOUR COLLECTION NAME HERE>";
 
-        try {
-          // Connect to the MongoDB cluster
-          await client.connect();
+            //change connection string to your own mongodb string
+            const connectionString = "<ADD YOUR OWN CONNECTION STRING HERE>";
 
-          // Make the appropriate DB calls
-          await listMovies(client);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          // Close the connection to the MongoDB cluster
-          await client.close();
-        }
-      }
+            //connects mongoDB then makes relevant calls ListMovies
+            async function listMoviesMainDBCall() {
+              var client = await connectDb();
 
-      //runs the function at start
-      listMoviesMainDBCall().catch(console.error);
+              try {
+                // Connect to the MongoDB cluster
+                await client.connect();
 
-      //List all the movies inside the MongoDB by sending the data to a datatable
-      async function listMovies(client) {
-        //captures all data from the movies collection
-        const cursor = await client.db().collection("MovieTest").find();
+                // Make the appropriate DB calls
+                await listMovies(client);
+              } catch (e) {
+                console.error(e);
+              } finally {
+                // Close the connection to the MongoDB cluster
+                await client.close();
+              }
+            }
 
-        //assigns retult data
-        const results = await cursor.toArray();
+            //runs the function at start
+            listMoviesMainDBCall().catch(console.error);
 
-        //Table creation with data
-        $(document).ready(function () {
-          var table = $("#example").DataTable({
-            dom: "Bfrtip",
-            buttons: ["excel", "pdf"],
-            data: results,
-            scrollY: "50vh",
-            scrollCollapse: true,
-            paging: false,
-            columns: [
-              //{ title:"ID" ,data: "_id" },
-              { title: "Name", data: "Name" },
-              { title: "Own", data: "Own" },
-              { title: "Type", data: "Type" },
-              { title: "Source", data: "Source" },
-              /* DELETE */ {
-                mRender: function (data, type, row) {
-                  return (
-                    '<a class="btn btn-danger js-delete" data-id="' +
-                    row._id +
-                    '">DELETE</a>'
-                  );
-                },
-              },
-            ],
-          });
+            //List all the movies inside the MongoDB by sending the data to a datatable
+            async function listMovies(client) {
+              //captures all data from the movies collection
+              const cursor = await client.db().collection(collectionType).find();
 
-          //handles the dubmit button by adding data to an object then sending it to a Database call to add the object to mongodb
-          document
-            .getElementById("btnSubmit")
-            .addEventListener("click", function (event) {
-              event.preventDefault();
+              //assigns retult data
+              const results = await cursor.toArray();
 
-              //variables for object creation
-              var nameValue = document.getElementById("movieName").value;
-              var ownValue = document.getElementById("movieOwn").value;
-              var typeValue = document.getElementById("movieType").value;
-              var sourceValue = document.getElementById("movieSource").value;
+              //Table creation with data
+              $(document).ready(function () {
+                var table = $("#example").DataTable({
+                  dom: "Bfrtip",
+                  buttons: ["excel", "pdf"],
+                  data: results,
+                  scrollY: "50vh",
+                  scrollCollapse: true,
+                  paging: false,
+                  columns: [
+                    //{ title:"ID" ,data: "_id" },
+                    { title: "Name", data: "Name" },
+                    { title: "Own", data: "Own" },
+                    { title: "Type", data: "Type" },
+                    { title: "Source", data: "Source" },
+                    /* DELETE */ {
+                      mRender: function (data, type, row) {
+                        return (
+                          '<a class="btn btn-danger js-delete" data-id="' +
+                          row._id +
+                          '">DELETE</a>'
+                        );
+                      },
+                    },
+                  ],
+                });
 
-              //creates a movie object
-              var movie = {
-                Name: nameValue,
-                Own: ownValue,
-                Type: typeValue,
-                Source: sourceValue,
-              };
+                //handles the dubmit button by adding data to an object then sending it to a Database call to add the object to mongodb
+                document
+                  .getElementById("btnSubmit")
+                  .addEventListener("click", function (event) {
+                    event.preventDefault();
 
-              //sends object to a database call for upload
-              addItem(movie);
+                    //variables for object creation
+                    var nameValue = document.getElementById("movieName").value;
+                    var ownValue = document.getElementById("movieOwn").value;
+                    var typeValue = document.getElementById("movieType").value;
+                    var sourceValue = document.getElementById("movieSource").value;
 
-              //adds the row dynamically to the datatable without a need to refresh
-              table.row
-                .add({
-                  Name: nameValue,
-                  Own: ownValue,
-                  Type: typeValue,
-                  Source: sourceValue,
-                })
-                .draw();
+                    //creates a movie object
+                    var movie = {
+                      Name: nameValue,
+                      Own: ownValue,
+                      Type: typeValue,
+                      Source: sourceValue,
+                    };
 
-              //resets the values to blank after a movie is added
-              document.getElementById("movieName").value = "";
-              document.getElementById("movieOwn").value = "";
-              document.getElementById("movieType").value = "";
-              document.getElementById("movieSource").value = "";
-            });
+                    //sends object to a database call for upload
+                    addItem(movie);
 
-          //adds a click function to all buttons with a class of js delete then handles it
-          $("#example").on("click", ".js-delete", function () {
-            var button = $(this);
+                    //adds the row dynamically to the datatable without a need to refresh
+                    table.row
+                      .add({
+                        Name: nameValue,
+                        Own: ownValue,
+                        Type: typeValue,
+                        Source: sourceValue,
+                      })
+                      .draw();
 
-            //jquery confirm box to ask if user is sure they want to delete an item
-            $.confirm({
-              title: "WARNING!",
-              content: "Delete item?",
-              buttons: {
-                confirm: function () {
-                  //if yes, send the ID of the clicked delete button to a database call for deletion
-                  deleteMovie(button.attr("data-id"));
-                  //redraws the table without a need to refresh the main program
-                  table.row(button.parents("tr")).remove().draw();
-                  console.log("Movie was deleted!");
-                },
-                cancel: function () {
-                  console.log("Movie was not deleted");
-                },
-              },
-            });
-          });
-        });
-      }
+                    //resets the values to blank after a movie is added
+                    document.getElementById("movieName").value = "";
+                    document.getElementById("movieOwn").value = "";
+                    document.getElementById("movieType").value = "";
+                    document.getElementById("movieSource").value = "";
+                  });
 
-      //function to handle the delete by ID
-      async function deleteListingByID(client, idOfListing) {
-        //variables and requires
-        var mongoose = require("mongoose");
-        var objectId = mongoose.Types.ObjectId(idOfListing);
+                //adds a click function to all buttons with a class of js delete then handles it
+                $("#example").on("click", ".js-delete", function () {
+                  var button = $(this);
 
-        //calls mongodb and deletes one by ID
-        const result = await client
-          .db()
-          .collection("MovieTest")
-          .deleteOne({ _id: objectId });
-        console.log("Movie Removed");
-      }
+                  //jquery confirm box to ask if user is sure they want to delete an item
+                  $.confirm({
+                    title: "WARNING!",
+                    content: "Delete item?",
+                    buttons: {
+                      confirm: function () {
+                        //if yes, send the ID of the clicked delete button to a database call for deletion
+                        deleteMovie(button.attr("data-id"));
+                        //redraws the table without a need to refresh the main program
+                        table.row(button.parents("tr")).remove().draw();
+                        console.log("Movie was deleted!");
+                      },
+                      cancel: function () {
+                        console.log("Movie was not deleted");
+                      },
+                    },
+                  });
+                });
+              });
+            }
 
-      //mongoDB call to delete a movie which then calls deletelistingbyID
-      async function deleteMovie(id) {
-        const client = new MongoClient(
-          "<ADD MONGO DB CONNECTION STRING HERE>",
-          {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-          }
-        );
+            //function to handle the delete by ID
+            async function deleteListingByID(client, idOfListing) {
+              //variables and requires
+              var mongoose = require("mongoose");
+              var objectId = mongoose.Types.ObjectId(idOfListing);
 
-        try {
-          // Connect to the MongoDB cluster
-          await client.connect();
+              //calls mongodb and deletes one by ID
+              const result = await client
+                .db()
+                .collection(collectionType)
+                .deleteOne({ _id: objectId });
+              console.log("Movie Removed");
+            }
 
-          // Make the appropriate DB calls
-          await deleteListingByID(client, id);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          // Close the connection to the MongoDB cluster
-          await client.close();
-        }
-      }
+            //mongoDB call to delete a movie which then calls deletelistingbyID
+            async function deleteMovie(id) {
+              var client = await connectDb();
 
-      //mongodb call to add a movie
-      async function addMovie(movie) {
-        const client = new MongoClient(
-          "<ADD MONGO DB CONNECTION STRING HERE>",
-          {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-          }
-        );
+              try {
+                // Connect to the MongoDB cluster
+                await client.connect();
 
-        try {
-          // Connect to the MongoDB cluster
-          await client.connect();
+                // Make the appropriate DB calls
+                await deleteListingByID(client, id);
+              } catch (e) {
+                console.error(e);
+              } finally {
+                // Close the connection to the MongoDB cluster
+                await client.close();
+              }
+            }
 
-          // Make the appropriate DB calls
-          await createListing(client, movie);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          // Close the connection to the MongoDB cluster
-          await client.close();
-        }
-      }
+            //function to connect to the DB and return the connect object
+            async function connectDb(){
+                const client = new MongoClient(
+                connectionString,
+                  {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true,
+                  },
 
-      //function that handles adding an item to mongodb
-      function addItem(item) {
-        //if any item is blank, prevent adding an item
-        if (
-          item.Name === "" ||
-          item.Own === "" ||
-          item.Type === "" ||
-          item.Source === ""
-        ) {
-          alert("Please enter all fields");
-          return false;
-        }
-        //adds the movie to the db
-        addMovie(item);
-      }
+                );
+                return client;
+            };
 
-      //db call which adds/inserts a new record
-      async function createListing(client, newListing) {
-        const result = await client
-          .db()
-          .collection("MovieTest")
-          .insertOne(newListing);
-        console.log(
-          `New listing created with the following id: ${result.insertedId}`
-        );
+            //mongodb call to add a movie
+            async function addMovie(movie) {
 
-        //bootstrap 5 toast alert call which find a class of toast and sends a pop up alert
-        var toastElList = [].slice.call(document.querySelectorAll(".toast"));
-        var toastList = toastElList.map(function (toastEl) {
-          // Creates an array of toasts (it only initializes them)
-          return new bootstrap.Toast(toastEl); // No need for options; use the default options
-        });
-        //for each toast found, show it
-        toastList.forEach((toast) => toast.show()); // This show them
-      }
+              var client = await connectDb();
+
+              try {
+                // Connect to the MongoDB cluster
+                await client.connect();
+
+                // Make the appropriate DB calls
+                await createListing(client, movie);
+              } catch (e) {
+                console.error(e);
+              } finally {
+                // Close the connection to the MongoDB cluster
+                await client.close();
+              }
+            }
+
+            //function that handles adding an item to mongodb
+            function addItem(item) {
+              //if any item is blank, prevent adding an item
+              if (
+                item.Name === "" ||
+                item.Own === "" ||
+                item.Type === "" ||
+                item.Source === ""
+              ) {
+                alert("Please enter all fields");
+                return false;
+              }
+              //adds the movie to the db
+              addMovie(item);
+            }
+
+            //db call which adds/inserts a new record
+            async function createListing(client, newListing) {
+              const result = await client
+                .db()
+                .collection(collectionType)
+                .insertOne(newListing);
+              console.log(
+                `New listing created with the following id: ${result.insertedId}`
+              );
+
+              //bootstrap 5 toast alert call which find a class of toast and sends a pop up alert
+              var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+              var toastList = toastElList.map(function (toastEl) {
+                // Creates an array of toasts (it only initializes them)
+                return new bootstrap.Toast(toastEl); // No need for options; use the default options
+              });
+              //for each toast found, show it
+              toastList.forEach((toast) => toast.show()); // This show them
+            }
     </script>
   </head>
   <body>
