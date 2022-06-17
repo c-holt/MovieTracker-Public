@@ -14,7 +14,7 @@
   "author": "Cody Holt",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^13.1.5"
+    "electron": "^15.5.5"
   },
   "dependencies": {
     "bootstrap": "^5.0.2",
